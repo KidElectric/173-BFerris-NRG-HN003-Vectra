@@ -1,6 +1,6 @@
 #!/bin/bash
 module load rclone/1.53.2
-PRJ="HCC-CBS-162-Hillman-BFerris-18139-HN-Vectra"
+PRJ="HCC-CBS-173-Hillman-BFerris-NRG-HN003-Vectra"
 src=/ix/rbao/Projects/$PRJ
 dst=odrive:/Internal_Project_Data_2/$PRJ
 logs=$src/logs
