@@ -14,10 +14,11 @@ suppressPackageStartupMessages({
 print('Library load finished')
 args = commandArgs(trailingOnly=TRUE)
 fn <- args[1] #input file
+slurm <- args[2]
 print(fn)
 fn.base <- str_split_fixed(fn,'_cell_seg',n=2)[1]
 print(fn.base)
-results <- args[2] #output directory
+results <- args[3] #output directory
 print(results)
 cd8.t <- list('Phenotype-CD3' = 'CD3+',
               'Phenotype-CD8' = 'CD8+',
@@ -47,7 +48,7 @@ keep.cols <- c('Sample Name', 'fn', 'Cell ID',
 df <- data.frame(c())
 dist = 35
 
-csd <- read.csv(file.path(inform.data,fn),
+csd <- read.csv(file.path(slurm,fn),
            sep = '\t',
            check.names=FALSE) #check.names=FALSE will prevent replacing spaces with periods\
 clean.csd <- csd[csd[,'Tissue Category'] != 'Blank',]

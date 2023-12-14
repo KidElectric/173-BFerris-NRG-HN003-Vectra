@@ -1,10 +1,11 @@
 #!/bin/bash
 #SBATCH --job-name=vectra
 #SBATCH --cpus-per-task=4
-#SBATCH --time=00:10:00 # HH:MM:SS
+#SBATCH --time=00:03:00 # HH:MM:SS
 #SBATCH --mem=128g
-#SBATCH --array=1-1000
+#SBATCH --array=1-29
 
+ARRAY_OFFSET=2000 #Allow array to roll past 1000 jobs
 module load singularity/3.9.6
 module load rclone/1.53.2
 
@@ -31,22 +32,21 @@ RUN_POST=0 # not implemented
 ## 
 # 
 
-FILE=$(awk -v task=$SLURM_ARRAY_TASK_ID '$1==task {print $2}' $SAMPLES)
+USE_SLURM=$(($SLURM_ARRAY_TASK_ID + $ARRAY_OFFSET))
+FILE=$(awk -v task=$USE_SLURM '$1==task {print $2}' $SAMPLES)
 FILE_NAME=${FILE%.*} 
-FILE_PATH=$(awk -v task=$SLURM_ARRAY_TASK_ID '$1==task {print $3}' $SAMPLES)
+FILE_PATH=$(awk -v task=$USE_SLURM '$1==task {print $3}' $SAMPLES)
 
 #Copy the WSI file to scratch:
 rclone copy $FILE_PATH $SLURM_SCRATCH --progress
-FILE_PATH=$SLURM_SCRATCH/$FILE
 
 #Size of the tiles to use for inference:
-echo "Task ${SLURM_ARRAY_TASK_ID} using ${FILE}."
+echo "Task ${USE_SLURM} using ${FILE}."
 VER=1
 
 #############################################################
 #### 1) First run pre-processing R script
 JOB_SCRIPT=$SCRIPT_PATH/pre_proc.r
-# JOB_SCRIPT=$SCRIPT_PATH/test.r
 RSCRIPT=/ihome/rbao/bri8/envs/r_seurat/bin/Rscript
 if [ $RUN_PREPROC = 1 ]
 then
@@ -54,9 +54,10 @@ then
     DATE_STR=$(date "+%Y-%m-%d_%H-%M-%S")
     echo $DATE_STR
     $RSCRIPT $JOB_SCRIPT \
-            $FILE_PATH \
+            $FILE \
+            $SLURM_SCRATCH \
             $RESULTS_PATH
-    echo "Preprocessing complete, now beginning inference."
+    echo "Preprocessing complete."
 fi
 DATE_STR=$(date "+%Y-%m-%d_%H-%M-%S")
 echo $DATE_STR
