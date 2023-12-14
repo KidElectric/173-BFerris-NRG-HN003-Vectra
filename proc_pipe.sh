@@ -3,7 +3,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --time=00:10:00 # HH:MM:SS
 #SBATCH --mem=128g
-#SBATCH --array=1
+#SBATCH --array=1-1000
 
 module load singularity/3.9.6
 module load rclone/1.53.2
